@@ -1,9 +1,8 @@
-﻿namespace AspnetCore.Cracken.Enums
+﻿namespace AspnetCore.Cracken.Enums;
+
+public enum CompressionType
 {
-    public enum CompressionType
-    {
-        GZIP,
-        BROTLI,
-        BOTH
-    }
+    GZIP,
+    BROTLI,
+    BOTH
 }

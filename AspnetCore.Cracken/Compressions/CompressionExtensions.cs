@@ -1,87 +1,80 @@
-﻿using AspnetCore.Cracken.Enums;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.ResponseCompression;
-using Microsoft.Extensions.DependencyInjection;
-using System.IO.Compression;
+﻿namespace AspnetCore.Cracken.Compressions;
 
-namespace AspnetCore.Cracken.Compressions
+public static class CompressionExtensions
 {
-    public static class CompressionExtensions
+    #region privates
+    private static IServiceCollection InsertGzipCompression(IServiceCollection services, CompressionLevel gZipCompresion)
     {
-        #region privates
-        private static IServiceCollection InsertGzipCompression(IServiceCollection services, CompressionLevel gZipCompresion)
+        services.AddResponseCompression(options =>
         {
-            services.AddResponseCompression(options =>
-            {
-                options.EnableForHttps = true;
-                options.Providers.Add<GzipCompressionProvider>();
-            });
+            options.EnableForHttps = true;
+            options.Providers.Add<GzipCompressionProvider>();
+        });
 
-            services.Configure<GzipCompressionProviderOptions>(options =>
-            {
-                options.Level = gZipCompresion;
-            });
-
-            return services;
-        }
-
-        private static IServiceCollection InsertBrotliCompression(IServiceCollection services, CompressionLevel brotliCompresionLevel)
+        services.Configure<GzipCompressionProviderOptions>(options =>
         {
-            services.AddResponseCompression(options =>
-            {
-                options.EnableForHttps = true;
-                options.Providers.Add<BrotliCompressionProvider>();
-            });
+            options.Level = gZipCompresion;
+        });
 
-            services.Configure<BrotliCompressionProviderOptions>(options =>
-            {
-                options.Level = brotliCompresionLevel;
-            });
+        return services;
+    }
 
-            return services;
-        }
-        private static IServiceCollection InsertBothCompressions(IServiceCollection services,
-                                                                 CompressionLevel gZipCompressionLevel,
-                                                                 CompressionLevel brotliCompressionLevel)
+    private static IServiceCollection InsertBrotliCompression(IServiceCollection services, CompressionLevel brotliCompresionLevel)
+    {
+        services.AddResponseCompression(options =>
         {
-            services.AddResponseCompression(options =>
-            {
-                options.EnableForHttps = true;
-                options.Providers.Add<BrotliCompressionProvider>();
-                options.Providers.Add<GzipCompressionProvider>();
-            });
+            options.EnableForHttps = true;
+            options.Providers.Add<BrotliCompressionProvider>();
+        });
 
-            services.Configure<BrotliCompressionProviderOptions>(options =>
-            {
-                options.Level = brotliCompressionLevel;
-            });
-
-            services.Configure<GzipCompressionProviderOptions>(options =>
-            {
-                options.Level = gZipCompressionLevel;
-            });
-
-            return services;
-        }
-        #endregion
-
-        public static IServiceCollection AddMinimalCompressions(this IServiceCollection services,
-                                                                CompressionType compressionType,
-                                                                CompressionLevel gZipCompressionLevel = CompressionLevel.SmallestSize,
-                                                                CompressionLevel brotliCompressionLevel = CompressionLevel.Fastest)
+        services.Configure<BrotliCompressionProviderOptions>(options =>
         {
+            options.Level = brotliCompresionLevel;
+        });
 
-            switch (compressionType)
-            {
-                case var _ when compressionType == CompressionType.GZIP:
-                    return InsertGzipCompression(services, gZipCompressionLevel);
-                case var _ when compressionType == CompressionType.BROTLI:
-                    return InsertBrotliCompression(services, brotliCompressionLevel);
-                case var _ when compressionType == CompressionType.BOTH:
-                    return InsertBothCompressions(services, gZipCompressionLevel, brotliCompressionLevel);
-                default:
-                    return services;
-            }
+        return services;
+    }
+    private static IServiceCollection InsertBothCompressions(IServiceCollection services,
+                                                             CompressionLevel gZipCompressionLevel,
+                                                             CompressionLevel brotliCompressionLevel)
+    {
+        services.AddResponseCompression(options =>
+        {
+            options.EnableForHttps = true;
+            options.Providers.Add<BrotliCompressionProvider>();
+            options.Providers.Add<GzipCompressionProvider>();
+        });
+
+        services.Configure<BrotliCompressionProviderOptions>(options =>
+        {
+            options.Level = brotliCompressionLevel;
+        });
+
+        services.Configure<GzipCompressionProviderOptions>(options =>
+        {
+            options.Level = gZipCompressionLevel;
+        });
+
+        return services;
+    }
+    #endregion
+
+    public static IServiceCollection AddMinimalCompressions(this IServiceCollection services,
+                                                            CompressionType compressionType,
+                                                            CompressionLevel gZipCompressionLevel = CompressionLevel.SmallestSize,
+                                                            CompressionLevel brotliCompressionLevel = CompressionLevel.Fastest)
+    {
+
+        switch (compressionType)
+        {
+            case var _ when compressionType == CompressionType.GZIP:
+                return InsertGzipCompression(services, gZipCompressionLevel);
+            case var _ when compressionType == CompressionType.BROTLI:
+                return InsertBrotliCompression(services, brotliCompressionLevel);
+            case var _ when compressionType == CompressionType.BOTH:
+                return InsertBothCompressions(services, gZipCompressionLevel, brotliCompressionLevel);
+            default:
+                return services;
         }
     }
 }

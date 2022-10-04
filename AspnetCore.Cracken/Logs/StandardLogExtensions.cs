@@ -1,8 +1,4 @@
-﻿using Microsoft.AspNetCore.HttpLogging;
-using Microsoft.Extensions.DependencyInjection;
-
-
-namespace AspnetCore.Cracken.Logs;
+﻿namespace AspnetCore.Cracken.Logs;
 
 public static class StandardLogExtensions
 {
